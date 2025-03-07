@@ -1,13 +1,18 @@
-# Usa a imagem do JDK 17
-FROM openjdk:17-jdk-slim
-# Define o diretório de trabalho dentro do contêiner
+# Estágio 1: Build da aplicação
+FROM maven:3.8.5-openjdk-17 as build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copia os arquivos da aplicação para o contêiner
-COPY target/*.jar app.jar
+# Estágio 2: Imagem final mais enxuta
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=build /app/target/app.jar ./app.jar
 
-# Expõe a porta 8088 para acesso externo
+
+
+# Expõe a porta da aplicação
 EXPOSE 8088
 
-# Comando para iniciar a aplicação
+# Inicia a aplicação
 ENTRYPOINT ["java", "-jar", "app.jar"]

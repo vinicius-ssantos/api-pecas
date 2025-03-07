@@ -16,10 +16,6 @@ services:
     networks:
       - spring-demo
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U username -d pecas_db"]
-      interval: 10s
-      retries: 5
 
   kong-db:
     image: postgres:latest
@@ -30,11 +26,29 @@ services:
       POSTGRES_PASSWORD: kong
       POSTGRES_DB: kong
     ports:
-      - "5433:5432" # PostgreSQL exclusivo para o Kong
+      - "5433:5432"  # PostgreSQL exclusivo para o Kong
     volumes:
       - kong_data:/var/lib/postgresql/data
     networks:
       - spring-demo
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "kong"]
+      interval: 10s
+      retries: 5
+
+  kong-migrations:
+    image: kong:latest
+    command: kong migrations bootstrap
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+    networks:
+      - spring-demo
+    depends_on:
+      kong-db:
+        condition: service_healthy
 
   kong:
     image: kong:latest
@@ -56,14 +70,19 @@ services:
       - "8001:8001"
       - "8444:8444"
     depends_on:
-      - kong-db
+      kong-db:
+        condition: service_healthy
+      kong-migrations:
+        condition: service_completed_successfully
     networks:
       - spring-demo
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      retries: 5
 
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: springboot_api
     restart: always
     environment:
