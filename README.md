@@ -19,14 +19,14 @@ Antes de começar, certifique-se de ter os seguintes requisitos instalados:
 
 ### **2.1. Clonar o repositório**
 ```sh
-git clone https://github.com/seu-repositorio/api-trabalho.git
-cd api-trabalho
+  git clone https://github.com/seu-repositorio/api-trabalho.git
+  cd api-trabalho
 ```
 
 ### **2.2. Compilar o projeto**
 Antes de rodar o Docker, compile o projeto para gerar o `.jar` na pasta `target/`:
 ```sh
-mvn clean package
+  mvn clean package -DskipTests
 ```
 
 ---
@@ -35,12 +35,17 @@ mvn clean package
 
 Para iniciar todos os serviços (**Banco de Dados, API e Kong**), execute:
 ```sh
-docker-compose up -d --build
+  docker-compose up -d --build
 ```
 
 Após subir os serviços, confirme se os contêineres estão rodando:
 ```sh
-docker ps
+  docker ps
+```
+
+Se precisar reiniciar um serviço específico:
+```sh
+  docker-compose restart <nome-do-servico>
 ```
 
 ---
@@ -60,12 +65,12 @@ sleep 10
 # Criando um serviço no Kong apontando para a API
 curl -i -X POST --url http://localhost:8001/services/ \
   --data 'name=api-trabalho' \
-  --data 'url=http://api:8088'
+  --data 'url=http://springboot_api:8088' || echo "Serviço já existe. Continuando..."
 
 # Criando uma rota para a API
 curl -i -X POST --url http://localhost:8001/services/api-trabalho/routes \
   --data 'paths[]=/api/v1/peca' \
-  --data 'name=peca-route'
+  --data 'name=peca-route' || echo "Rota já existe. Continuando..."
 
 # Exibe as rotas configuradas
 curl -i -X GET --url http://localhost:8001/routes
@@ -73,8 +78,8 @@ curl -i -X GET --url http://localhost:8001/routes
 
 ### **4.2. Executar o script**
 ```sh
-chmod +x setup-kong.sh
-./setup-kong.sh
+  chmod +x setup-kong.sh
+  ./setup-kong.sh
 ```
 
 Agora a API pode ser acessada via Kong em:
@@ -114,7 +119,7 @@ http://localhost:8000/api/v1/peca
 
 Caso precise parar os serviços, execute:
 ```sh
-docker-compose down
+  docker-compose down
 ```
 
 ---
@@ -151,25 +156,35 @@ docker-compose down
 
 ### **9.1. Banco de Dados não conectando**
 ```sh
-psql -h localhost -p 5432 -U username -d pecas_db
+  psql -h localhost -p 5432 -U username -d pecas_db
 ```
 Se houver erro de conexão, verifique se o contêiner está rodando:
 ```sh
-docker ps
+  docker ps
 ```
 E reinicie:
 ```sh
-docker-compose restart postgres
+  docker-compose restart postgres
 ```
 
 ### **9.2. Erro `target/*.jar not found`**
 Se ao executar `docker-compose up -d --build` houver erro **"target/*.jar not found"**, rode:
 ```sh
-mvn clean package
+  mvn clean package -DskipTests
 ```
 E depois:
+```sh 
+  docker-compose up -d --build
+```
+
+### **9.3. Kong não inicia corretamente**
+Se o Kong apresentar erro de banco de dados, execute:
 ```sh
-docker-compose up -d --build
+  docker-compose restart kong
+```
+E reexecute as migrações manualmente:
+```sh
+  docker-compose run --rm kong-migrations kong migrations bootstrap
 ```
 
 ---
