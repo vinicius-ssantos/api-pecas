@@ -1,0 +1,62 @@
+{
+  "info": {
+    "name": "API-Trabalho-Kong",
+    "_postman_id": "12345678-abcd-1234-efgh-56789ijklmno",
+    "description": "Coleção de testes para API via Kong API Gateway",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Criar uma Peça",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"123\",\n  \"nome\": \"Motor X\",\n  \"descricao\": \"Peça de motor de alta performance\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/v1/peca",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "v1", "peca"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Obter todas as Peças",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/api/v1/peca",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "v1", "peca"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Obter uma Peça por Código",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/api/v1/peca/123",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "v1", "peca", "123"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
